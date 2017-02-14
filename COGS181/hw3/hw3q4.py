@@ -1,6 +1,9 @@
 # HW2
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+
+matplotlib.interactive(True)
 
 # Problem 4
 
@@ -42,6 +45,7 @@ for line in data:
 trainX = np.matrix(trainX)
 trainX = np.transpose(trainX)
 testX = np.matrix(testX)
+testX = np.transpose(testX)
 print trainX.shape
 #print len(trainX), len(trainY), len(testX), len(testY)
 
@@ -96,6 +100,7 @@ def gradient(W1, b1, W2, b2, X, Y):
     # compute g_W1
     # compute F-Y
     diff = F2 - np.matrix(Y)
+    #print 'diff\n', diff
     # compute element-wise multiplicatin of A=w2*sig1*(1-sig1)
     A = np.zeros(F1.shape)
     A[0,:] = W2[0,0] * F1[0,:]
@@ -105,15 +110,19 @@ def gradient(W1, b1, W2, b2, X, Y):
         d = diff[0,i]
         B[:,i] = A[:,i] * d
     g_W1 = B * np.transpose(X)
-    print B
-    print np.transpose(X)
-    print g_W1
+    #print 'B\n', B
+    #print 'X\n', np.transpose(X)
+    #print 'g_w1\n', g_W1
     # compute g_b1
     g_b1 = A * np.transpose(diff)
     # compute g_w2
+    #print 'diff\n', diff.shape, diff
+    #print 'F1\n', F1.shape, np.transpose(F1)
     g_W2 = diff * np.transpose(F1)
     # compute g_b2
     g_b2 = np.sum(diff)
+    #print 'g_w2\n', g_W2
+    #print 'g_b2\n', g_b2
     return g_W1, g_b1, g_W2, g_b2
 
 #print cost(trainY, W, trainX, b)
@@ -152,18 +161,35 @@ def measures(F,Y):
     print 'recall', recall
     print 'fvale', fvalue
 
+def loss(W1,b1,W2,b2,X,Y):
+    F1 = sigmoid(W1, b1, X)
+    F2 = sigmoid(W2, b2, F1)
+    Y = np.matrix(Y)
+    L = 0
+    for i in range(Y.shape[1]):
+        y = Y[0,i]
+        f = F2[0,i]
+        L -= y*np.log(f) + (1-y)*np.log(1-f)
+    return L
 
 #learning parameters W and b
 # Initialize W and b to be zeros
-W1 = np.zeros((2,4))
-b1 = np.zeros((2,1))
-W2 = np.zeros((1,2))
-b2 = np.zeros((1,1))
+W1 = np.random.random((2,4))
+b1 = np.random.random((2,1))
+W2 = np.random.random((1,2))
+b2 = np.random.random((1,1))
 all_pass = False
 itr = len(trainX)
 lr = 0.01
 counting=0
+#trainY = np.matrix(trainY)
+#print 'trainy shape', trainY.shape
+train_loss = []
 while not all_pass and counting<1000:
+    # compute train loss
+    L = loss(W1,b1,W2,b2,trainX,trainY)
+    train_loss.append(L)
+    print 'loss', L
     counting += 1
     #print 'before updating in loop', W, b
     # check training data to see if it is classified correctly
@@ -199,23 +225,39 @@ while not all_pass and counting<1000:
         b2 += -lr * g_b2
     print 'after updating in loop', W1, b1, W2, b2
     print '# itr: ', counting
-    if counting>3:
-        break
+    #if counting>1:
+    #    break
 #print W,b
 print '\nresults of training'
+print '\ntraining loss:\n', train_loss
+print 'num training itr:', counting
 #measures(F, trainY)
 #print F
 #print trainY
-'''
 # Test parameters on testing data set
-H_test, F_test = confidence(W, testX, b)
-print '\nresults of testing'
+print '\n testing error:\n'
+testY = np.matrix(testY)
+F1 = sigmoid(W1, b1, testX)
+F2 = sigmoid(W2, b2, F1)
+D, e = error_rate(F2,testY)
+#print ' and trainY', H, F, trainY
+print 'error', e
 #print H_test
 #print F_test
 #print testY
-measures(F_test, testY)
-'''
 
+# plotting
+xcoords = range(len(train_loss))
+plt.plot(xcoords, train_loss)
+axes = plt.gca()
+#axes.set_xlim([0,6])
+#axes.set_ylim([0,0.6])
+plt.grid()
+plt.title('Training loss')
+plt.xlabel('Iterations')
+plt.ylabel('Training loss')
+plt.show()
+plt.savefig('plot.png')
 
 
 
