@@ -13,8 +13,9 @@ x = tf.placeholder(tf.float32, [None, 784])
 
 # parameters
 lr = 0.001
-batch_size = 50
-
+batch_size = 100
+train_error_list = []
+test_error_list = []
 
 # from here continued
 
@@ -89,16 +90,35 @@ accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 sess.run(tf.initialize_all_variables())
 
 total_batch = int(mnist.train.num_examples/batch_size)
-for epoch in range(200):
-  for i in range(total_batch):
+print (total_batch)
+counter = 0
+for epoch in range(1):
+  for i in range(100):
+    counter += 1
     batch = mnist.train.next_batch(batch_size)
     train_step.run(feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
-  train_accuracy = accuracy.eval(feed_dict={
+    train_accuracy = accuracy.eval(feed_dict={
         x:batch[0], y_: batch[1], keep_prob: 1.0})
-  print("step %d, training accuracy %g"%(i, train_accuracy))
-  test_accuracy = accuracy.eval(feed_dict={
+    train_error = 1 - train_accuracy
+    print("step %d, training error %g"%(counter, train_error))
+    test_accuracy = accuracy.eval(feed_dict={
 	x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0})
-  print("test accuracy %g"%(test_accuracy))
+    test_error = 1 - test_accuracy
+    print("test error %g"%(test_error))
+    train_error_list.append(train_error)
+    test_error_list.append(test_error)
+
+# plot error
+
+xcoords = range(len(train_error_list))
+plt.plot(xcoords, train_error_list)
+plt.plot(xcoords, test_error_list)
+axes = plt.gca()
+plt.grid()
+plt.title('Training and testing errors')
+plt.xlabel('batches')
+plt.ylabel('error')
+plt.savefig('plot_conv_all.png')
 
 
 
