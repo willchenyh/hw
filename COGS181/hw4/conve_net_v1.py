@@ -93,7 +93,7 @@ total_batch = int(mnist.train.num_examples/batch_size)
 print (total_batch)
 counter = 0
 for epoch in range(1):
-  for i in range(100):
+  for i in range(200):
     counter += 1
     batch = mnist.train.next_batch(batch_size)
     train_step.run(feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
